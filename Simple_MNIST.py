@@ -1,9 +1,9 @@
 import numpy as np
 import nnfs
-from nnfs.datasets import spiral_data
+# from nnfs.datasets import spiral_data
 from keras.datasets import mnist
 
-nnfs.init()
+# nnfs.init()
 
 
 class Layer_Dense:
