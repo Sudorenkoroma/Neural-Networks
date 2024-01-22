@@ -1,9 +1,5 @@
 import numpy as np
-import nnfs
-# from nnfs.datasets import spiral_data
 from keras.datasets import mnist
-
-# nnfs.init()
 
 
 class Layer_Dense:
@@ -23,6 +19,7 @@ class Layer_Dense:
 
 class Activation_ReLU:
     def forward(self, inputs):
+        self.inputs = inputs  # Зберігаємо вхідні дані для використання у backward pass
         self.output = np.maximum(0, inputs)
 
     def backward(self, dvalues):
@@ -71,6 +68,48 @@ class Loss_CategoricalCrossentropy(Loss):
         self.dinputs = self.dinputs / samples
 
 
+class Optimizer_Adam:
+
+    def __init__(self, learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-8):
+        self.learning_rate = learning_rate
+        self.beta1 = beta1
+        self.beta2 = beta2
+        self.epsilon = epsilon
+        self.iterations = 0
+
+    def update_params(self, layer):
+        # Ініціалізація моментів, якщо вони ще не ініціалізовані
+        if not hasattr(layer, 'weight_cache'):
+            layer.weight_momentums = np.zeros_like(layer.weights)
+            layer.weight_cache = np.zeros_like(layer.weights)
+            layer.bias_momentums = np.zeros_like(layer.biases)
+            layer.bias_cache = np.zeros_like(layer.biases)
+
+        # Оновлення моментів
+        layer.weight_momentums = self.beta1 * layer.weight_momentums + (1 - self.beta1) * layer.dweights
+        layer.bias_momentums = self.beta1 * layer.bias_momentums + (1 - self.beta1) * layer.dbiases
+
+        # Корекція зміщення моменту
+        weight_momentums_corrected = layer.weight_momentums / (1 - self.beta1 ** (self.iterations + 1))
+        bias_momentums_corrected = layer.bias_momentums / (1 - self.beta1 ** (self.iterations + 1))
+
+        # Оновлення кешу
+        layer.weight_cache = self.beta2 * layer.weight_cache + (1 - self.beta2) * layer.dweights ** 2
+        layer.bias_cache = self.beta2 * layer.bias_cache + (1 - self.beta2) * layer.dbiases ** 2
+
+        # Корекція зміщення кешу
+        weight_cache_corrected = layer.weight_cache / (1 - self.beta2 ** (self.iterations + 1))
+        bias_cache_corrected = layer.bias_cache / (1 - self.beta2 ** (self.iterations + 1))
+
+        # Оновлення ваг і зміщень
+        layer.weights -= self.learning_rate * weight_momentums_corrected / (np.sqrt(weight_cache_corrected) + self.epsilon)
+        layer.biases -= self.learning_rate * bias_momentums_corrected / (np.sqrt(bias_cache_corrected) + self.epsilon)
+
+        # Інкрементація ітерацій
+        self.iterations += 1
+
+
+"""
 class Optimizer_SGD:
     def __init__(self, learning_rate=1.0):
         self.learning_rate = learning_rate
@@ -78,7 +117,7 @@ class Optimizer_SGD:
     def update_params(self, layer):
         layer.weights -= self.learning_rate * layer.dweights
         layer.biases -= self.learning_rate * layer.dbiases
-
+"""
 
 def to_one_hot(labels, num_classes):
     one_hot_labels = np.eye(num_classes)[labels]
@@ -108,8 +147,7 @@ activation2 = Activation_Softmax()
 loss_function = Loss_CategoricalCrossentropy()
 
 # Ініціалізація оптимізатора
-optimizer = Optimizer_SGD(learning_rate=1.0)
-
+optimizer = Optimizer_Adam()
 dense1.forward(X)
 activation1.forward(dense1.output)
 
@@ -119,7 +157,7 @@ activation2.forward(dense2.output)
 loss_function = Loss_CategoricalCrossentropy()
 loss = loss_function.calculate(activation2.output, Y)
 
-for epoch in range(100):  # Кількість епох
+for epoch in range(1):  # Кількість епох
     # Пряме поширення
     dense1.forward(train_images)
     activation1.forward(dense1.output)
@@ -141,7 +179,7 @@ for epoch in range(100):  # Кількість епох
     optimizer.update_params(dense1)
     optimizer.update_params(dense2)
 
-    if epoch % 100 == 0:
+    if epoch % 1 == 0:
         print(f'Epoch {epoch}, Loss: {loss}')
 
 def predict(model, X):
@@ -163,7 +201,7 @@ X_test, y_test = test_images, test_labels
 y_pred = predict([dense1, activation1, dense2, activation2], X_test)
 
 # Переведення міток y_test у числовий формат, якщо вони у форматі one-hot
-y_test = np.argmax(y_test, axis=0)
+y_test = np.argmax(y_test, axis=1)
 
 # Обчислення точності
 test_accuracy = accuracy(y_pred, y_test)
