@@ -306,7 +306,6 @@ for epoch in range(33):
         prev_validation_loss = validation_loss
 
         # Виведення результатів на валідації
-
         if len(validation_labels.shape) == 2:
             y = np.argmax(validation_labels, axis=1)
         validation_accuracy = np.mean(predictions == y)
