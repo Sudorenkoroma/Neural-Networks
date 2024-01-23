@@ -218,7 +218,7 @@ optimizer = Optimizer_Adam(learning_rate=0.001, decay=1e-3)
 prev_validation_loss = float('inf')
 
 # Тренування моделі
-for epoch in range(33):
+for epoch in range(20):
     # Пряме поширення
     dense1.forward(train_images)
     bn1.forward(dense1.output)
@@ -247,7 +247,7 @@ for epoch in range(33):
         y = np.argmax(train_labels, axis=1)
     accuracy = np.mean(predictions == y)
 
-    if not epoch % 5:
+    if not epoch % 1:
         print(f'epoch: {epoch}, ' +
               f'acc: {accuracy:.3f}, ' +
               f'loss: {loss:.3f} (' +
@@ -315,53 +315,16 @@ for epoch in range(33):
             break
 
 
-def predict(model, X):
-    # Пряме поширення через всі шари
-    for layer in model:
-        layer.forward(X)
-        X = layer.output
-    # Повернення індексу найбільшого значення в кожному виході
-    return np.argmax(X, axis=1)
-
-img = cv2.imread('test_img.png', cv2.IMREAD_GRAYSCALE)
-
-# Перевірка на наявність зображення
-if img is not None:
-    # Зміна розміру зображення до 28x28
-    img = cv2.resize(img, (28, 28))
-    # Інвертування зображення: в MNIST білі цифри на чорному фоні
-    img = 255 - img
-    # Нормалізація піксельних значень
-    img = img.astype('float32') / 255
-    # Решейпінг зображення для мережі (1, 784)
-    img = img.reshape(1, 784)
-    # Використання моделі для передбачення цифри
-    prediction = predict([dense1, activation1, dense2, activation2, dense3, activation3, dense4, activation4], img)
-
-    # Виведення передбачення
-    print("Передбачена цифра:", prediction[0])
-else:
-    print("Зображення не знайдено.")
-
-
 # Збереження моделі (параметрів)
-np.save('dense1_weights.npy', dense1.weights)
-np.save('dense1_biases.npy', dense1.biases)
-np.save('dense2_weights.npy', dense2.weights)
-np.save('dense2_biases.npy', dense2.biases)
-np.save('dense2_weights.npy', dense3.weights)
-np.save('dense2_biases.npy', dense3.biases)
-np.save('dense2_weights.npy', dense4.weights)
-np.save('dense2_biases.npy', dense4.biases)
+import os
+folder_path = "saved_data"
+os.makedirs(folder_path, exist_ok=True)
 
-"""
-# Завантаження моделі (параметрів)
-dense1.weights = np.load('dense1_weights.npy')
-dense1.biases = np.load('dense1_biases.npy')
-dense2.weights = np.load('dense2_weights.npy')
-dense2.biases = np.load('dense2_biases.npy')
-dense3.weights = np.load('dense3_weights.npy')
-dense3.biases = np.load('dense3_biases.npy')
-dense4.weights = np.load('dense4_weights.npy')
-dense4.biases = np.load('dense4_biases.npy')
-"""
+np.save(os.path.join(folder_path, 'dense1_weights.npy'), dense1.weights)
+np.save(os.path.join(folder_path, 'dense1_biases.npy'), dense1.biases)
+np.save(os.path.join(folder_path, 'dense2_weights.npy'), dense2.weights)
+np.save(os.path.join(folder_path, 'dense2_biases.npy'), dense2.biases)
+np.save(os.path.join(folder_path, 'dense3_weights.npy'), dense3.weights)
+np.save(os.path.join(folder_path, 'dense3_biases.npy'), dense3.biases)
+np.save(os.path.join(folder_path, 'dense4_weights.npy'), dense4.weights)
+np.save(os.path.join(folder_path, 'dense4_biases.npy'), dense4.biases)
