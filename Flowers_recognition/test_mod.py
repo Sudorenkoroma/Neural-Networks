@@ -2,54 +2,37 @@ from keras.models import load_model
 import tensorflow as tf
 import numpy as np
 from PIL import Image
-import os
 import pathlib
 
+# Завантаження моделі
 model = load_model('my_model.keras')
 
-dataset_dir = os.path.abspath('flower_photos')
-dataset_dir = pathlib.Path(dataset_dir)
+# Визначення шляху до папки з датасетом
+dataset_dir = pathlib.Path('flower_photos')
 
-
-
+# Перевірка існування папки датасету
 if not dataset_dir.is_dir():
     print(f"Папка {dataset_dir} не знайдена.")
 else:
     print(f"Папка знайдена: {dataset_dir}")
 
+# Отримання списку міток класів безпосередньо з назв папок
+class_names = [item.name for item in dataset_dir.glob('*/') if item.is_dir()]
+print(f"Мітки класів: {class_names}")
 
-image_count = len(list(dataset_dir.glob("*/*.jpg")))
-print(f"Всего изображений: {image_count}")
-
-batch_size = 32
-img_width = 180
-img_height = 180
-
-
-train_ds = tf.keras.utils.image_dataset_from_directory(
-            dataset_dir,
-            validation_split=0.2,
-            subset="training",
-            seed=123,
-            image_size=(img_height, img_width),
-            batch_size=batch_size)
-
-
-class_names = train_ds.class_names
-
-img = Image.open("sunflower.jpg")
+# Завантаження зображення, яке потрібно класифікувати
+img = Image.open("flower.jpg")
 img = img.resize((180, 180))
 
+# Перетворення зображення в масив і додавання виміру пакету
 img_array = tf.keras.utils.img_to_array(img)
 img_array = tf.expand_dims(img_array, 0)
 
-# make predictions
+# Виконання передбачення
 predictions = model.predict(img_array)
 score = tf.nn.softmax(predictions[0])
 
-# print inference result
-print("На изображении скорее всего {} ({:.2f}% вероятность)".format(class_names[np.argmax(score)],
-    100 * np.max(score)))
-
-# show the image itself
-img.show()
+# Друк результату передбачення
+predicted_class = class_names[np.argmax(score)]
+probability = 100 * np.max(score)
+print(f"На зображенні {predicted_class} ({probability:.2f}% ймовірність)")

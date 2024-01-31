@@ -18,8 +18,6 @@ else:
 image_count = len(list(dataset_dir.glob("*/*.jpg")))
 print(f"Всего изображений: {image_count}")
 
-
-
 batch_size = 32
 img_width = 180
 img_height = 180
