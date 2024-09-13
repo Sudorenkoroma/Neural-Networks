@@ -1,6 +1,6 @@
 Overview
 
-This project showcases a simple neural network built from scratch using NumPy for matrix operations and Keras to load the MNIST dataset. It demonstrates my ability to develop fundamental machine learning architectures, optimize neural networks, and apply core concepts such as backpropagation, gradient descent, and early stopping. The model achieves competitive accuracy on the MNIST dataset, which consists of handwritten digits, and is optimized with the Adam optimizer.	
+This project showcases a simple neural network built from scratch using NumPy for matrix operations and Keras to load the MNIST dataset. It demonstrates my ability to develop fundamental machine learning architectures, optimize neural networks, and apply core concepts such as backpropagation, gradient descent, and early stopping. The model achieves competitive accuracy on the MNIST dataset, which consists of handwritten digits, and is optimized with the Adam optimizer.	  
 Key Features
 
 Custom-built Neural Network Layers: Implemented dense (fully connected) layers with backpropagation.
